@@ -22,6 +22,8 @@ public class UrlsServiceTests
         _service = new UrlsService(_mockContext.Object);
     }
 
+    // ---------- CreateShortUrlAsync (original + Exercício 1) ----------
+
     [Fact]
     public async Task CreateShortUrlAsync_ComUrlValida_DeveRetornarUrlItemComShortCode()
     {
@@ -37,6 +39,7 @@ public class UrlsServiceTests
         Assert.NotNull(resultado);
         Assert.Equal(urlOriginal, resultado.OriginalUrl);
         Assert.False(string.IsNullOrEmpty(resultado.ShortCode));
+        _mockContext.Verify(c => c.AddAsync(It.IsAny<UrlItem>()), Times.Once); // Ex. 1, item 3
     }
 
     [Fact]
@@ -49,6 +52,15 @@ public class UrlsServiceTests
     }
 
     [Fact]
+    public async Task CreateShortUrlAsync_ComUrlNula_DeveLancarArgumentException() // Ex. 1, item 1
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => _service.CreateShortUrlAsync(null!)
+        );
+    }
+
+    [Fact]
     public async Task CreateShortUrlAsync_ComEsquemaInvalido_DeveLancarArgumentException()
     {
         // Act & Assert
@@ -56,6 +68,20 @@ public class UrlsServiceTests
             () => _service.CreateShortUrlAsync("ftp://arquivo-invalido.com")
         );
     }
+
+    [Fact]
+    public async Task CreateShortUrlAsync_ComUrlMuitoLonga_DeveLancarArgumentException() // Ex. 1, item 2
+    {
+        // Arrange
+        var urlLonga = "https://exemplo.com/" + new string('a', 2100);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => _service.CreateShortUrlAsync(urlLonga)
+        );
+    }
+
+    // ---------- GetUrlByIdAsync (Exercício 2) ----------
 
     [Fact]
     public async Task GetUrlByIdAsync_ComGuidVazio_DeveLancarArgumentException()
